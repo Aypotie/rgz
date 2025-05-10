@@ -1,0 +1,159 @@
+#ifndef HANDLERS_HPP
+#define HANDLERS_HPP
+
+#include <string>
+#include <vector>
+
+#include "bcrypt/BCrypt.hpp"
+#include "../database/database.hpp"
+#include "../../lib/jwt-cpp/jwt.h"
+#include "../config/config.hpp"
+
+using namespace std;
+
+const string ERROR_INTERNAL = "Внутренняя ошибка";
+const string ERROR_USER_NOT_FOUND = "Пользователь не найден";
+const string ERROR_INVALID_PASSWORD = "Неправильный пароль";
+const string ERROR_INVALID_REQUEST = "Неправильный запрос";
+
+class Handlers
+{
+private:
+    Database &database;
+    AppConfig &config;
+
+public:
+    Handlers(Database &db, AppConfig &cfg) : database(db), config(cfg) {}
+
+    crow::json::wvalue getStatus()
+    {
+        vector<Status> statuses;
+        try
+        {
+            statuses = database.getStatus();
+        }
+        catch (const exception &e)
+        {
+            cerr << "ERROR: " << e.what() << '\n';
+            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+        }
+
+        crow::json::wvalue response;
+        for (size_t i = 0; i < statuses.size(); i++)
+        {
+            response["status"][i] = statuses[i].render();
+        }
+
+        return response;
+    }
+
+    crow::json::wvalue getType()
+    {
+        vector<Type> types;
+        try
+        {
+            types = database.getType();
+        }
+        catch (const std::exception &e)
+        {
+            cerr << "ERROR: " << e.what() << '\n';
+            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+        }
+
+        crow::json::wvalue response;
+        for (size_t i = 0; i < types.size(); i++)
+        {
+            response["type"][i] = types[i].render();
+        }
+
+        return response;
+    }
+
+    crow::json::wvalue getSector()
+    {
+        vector<Sector> sectors;
+        try
+        {
+            sectors = database.getSector();
+        }
+        catch (const exception &e)
+        {
+            cerr << "ERROR: " << e.what() << '\n';
+            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+        }
+
+        crow::json::wvalue response;
+        for (size_t i = 0; i < sectors.size(); i++)
+        {
+            response["sector"][i] = sectors[i].render();
+        }
+
+        return response;
+    }
+
+    void login(const crow::request &req, crow::response &res)
+    {
+        auto body = crow::json::load(req.body);
+
+        if (!body || !body.has("phone") || !body.has("password"))
+        {
+            res.code = 400;
+            res.write(crow::json::wvalue{{"error", ERROR_INVALID_REQUEST}}.dump());
+            res.end();
+            return;
+        }
+
+        string phone = body["phone"].s();
+        string password = body["password"].s();
+
+        // Получаем пользователя из БД
+        Securityman *user;
+        try
+        {
+            user = database.getSecuritymanByPhone(phone);
+        }
+        catch (const exception &e)
+        {
+            res.code = 400;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
+            return;
+        }
+        if (user == nullptr)
+        {
+            res.code = 404;
+            res.write(crow::json::wvalue{{"error", ERROR_USER_NOT_FOUND}}.dump());
+            res.end();
+            return;
+        }
+
+        if (!BCrypt::validatePassword(password.c_str(), user->password))
+        {
+            res.code = 401;
+            res.write(crow::json::wvalue{{"error", ERROR_INVALID_PASSWORD}}.dump());
+            res.end();
+            return;
+        }
+
+        // Генерация JWT
+        string token = jwt::create()
+                           .set_type("JWT")
+                           .set_payload_claim("id", jwt::claim(to_string(user->id)))
+                           .set_payload_claim("phone", jwt::claim(user->phone))
+                           .set_payload_claim("name", jwt::claim(user->name))
+                           .set_payload_claim("surname", jwt::claim(user->surname))
+                           .set_payload_claim("lastname", jwt::claim(user->last_name))
+                           .set_expires_at(std::chrono::system_clock::now() + chrono::minutes(config.jwtTTLHours))
+                           .sign(jwt::algorithm::hs256{config.jwtSecret});
+        delete user;
+        res.code = 200;
+        res.add_header("Set-Cookie", "token=" + token + "; HttpOnly; Path=/; Max-Age=" + to_string(config.jwtTTLHours * 3600));
+        res.end();
+    }
+
+    void getUser(const crow::request &req, crow::response &res)
+    {
+        // TODO: добавить получение пользователя из бд
+    }
+};
+#endif

@@ -4,5 +4,5 @@ docker-up:
 docker-down:
 	@docker compose down
 
-build:
-	@g++ main.cpp -lpqxx -lpq -lpthread -o main
+docker-delete:
+	@docker compose down --volumes --remove-orphans

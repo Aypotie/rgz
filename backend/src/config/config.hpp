@@ -20,6 +20,8 @@ struct AppConfig
 {
     string host;
     int port;
+    string jwtSecret;
+    int jwtTTLHours;
 };
 
 struct config
@@ -47,6 +49,8 @@ config loadConfig()
     AppConfig appCfg;
     appCfg.host = get_env_or_throw("APP_HOST");
     appCfg.port = atoi(get_env_or_throw("APP_PORT"));
+    appCfg.jwtSecret = get_env_or_throw("APP_JWT_SECRET");
+    appCfg.jwtTTLHours = atoi(get_env_or_throw("APP_JWT_TTL_HOURS"));
     cfg.appConfig = appCfg;
 
     return cfg;
