@@ -14,7 +14,7 @@ struct AuthMiddleware : crow::ILocalMiddleware
 {
     struct context
     {
-        Securityman *user;
+        Securityman *user = nullptr;
         bool isAuthenticated = false;
     };
 
@@ -52,8 +52,6 @@ struct AuthMiddleware : crow::ILocalMiddleware
 
             verifier.verify(decoded);
 
-            // TODO: добавить проверку на просрочку токена
-
             Securityman *user = new Securityman{};
             user->id = stoi(decoded.get_payload_claim("id").as_string());
             user->phone = decoded.get_payload_claim("phone").as_string();
@@ -74,7 +72,6 @@ struct AuthMiddleware : crow::ILocalMiddleware
 
     void after_handle(crow::request &req, crow::response &res, context &ctx)
     {
-        delete ctx.user;
     }
 };
 

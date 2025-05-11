@@ -1,5 +1,6 @@
 INSERT INTO securityman (surname, name, last_name, phone, password)
-VALUES ('Потапова','Айсмик','Васильевна','89133425555','$2a$12$Gwg7cmUZPspmnisDbW9yBeBYjTwEU207IkHP5Ym5CvVZbaqzJJw9e');
+VALUES ('Потапова','Айсмик','Васильевна','89133425555','$2a$12$Gwg7cmUZPspmnisDbW9yBeBYjTwEU207IkHP5Ym5CvVZbaqzJJw9e'), -- password
+('Постманов','Постман','Постманович','89130001234','$2y$10$TdkqbdFv5i4fPdgMn9H8sO45BTArTNXlf8DMVX7fO6koaKnf2zCNG'); -- password123
 
 INSERT INTO sector (name)
 VALUES ('A1'), ('A2');

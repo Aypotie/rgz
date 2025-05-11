@@ -143,7 +143,7 @@ public:
                            .set_payload_claim("name", jwt::claim(user->name))
                            .set_payload_claim("surname", jwt::claim(user->surname))
                            .set_payload_claim("lastname", jwt::claim(user->last_name))
-                           .set_expires_at(std::chrono::system_clock::now() + chrono::minutes(config.jwtTTLHours))
+                           .set_expires_at(std::chrono::system_clock::now() + chrono::hours(config.jwtTTLHours))
                            .sign(jwt::algorithm::hs256{config.jwtSecret});
         delete user;
         res.code = 200;
@@ -151,9 +151,28 @@ public:
         res.end();
     }
 
-    void getUser(const crow::request &req, crow::response &res)
+    void getUser(const AuthMiddleware::context &ctx, crow::response &res)
     {
-        // TODO: добавить получение пользователя из бд
+        if (!ctx.isAuthenticated || ctx.user == nullptr)
+        {
+            res.code = 401;
+            res.write(crow::json::wvalue{{"error", "Пользователь не авторизован"}}.dump());
+            res.end();
+            return;
+        }
+
+        Securityman *user = ctx.user;
+        crow::json::wvalue result = {
+            {"id", user->id},
+            {"phone", user->phone},
+            {"name", user->name},
+            {"surname", user->surname},
+            {"lastname", user->last_name}};
+
+        res.code = 200;
+        res.write(result.dump());
+        res.end();
+        ;
     }
 };
 #endif
