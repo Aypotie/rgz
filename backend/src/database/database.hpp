@@ -96,6 +96,40 @@ public:
         return sectorList;
     }
 
+    vector<IncidentListItem> getIncidents()
+    {
+        lock_guard<mutex> lock(db_mutex);
+        vector<IncidentListItem> incidentList;
+        pqxx::work tx{conn};
+
+        pqxx::result res = tx.exec(
+            "SELECT "
+            "i.id, i.created_at, i.incident_time, i.description, "
+            "s.name AS sector_name, "
+            "st.name AS status_name "
+            "FROM incident i "
+            "JOIN sector s ON s.id = i.sector_id "
+            "JOIN status st ON st.id = i.status_id ");
+
+        for (const auto &row : res)
+        {
+            IncidentListItem incident;
+
+            incident.id = row["id"].as<int>();
+            incident.created_time = row["created_at"].as<string>();
+            incident.incident_time = row["incident_time"].as<string>();
+            incident.description = row["description"].as<string>();
+            incident.sector = row["sector_name"].as<string>();
+            incident.status = row["status_name"].as<string>();
+
+            incidentList.push_back(incident);
+        }
+
+        tx.commit();
+
+        return incidentList;
+    }
+
     // vector<Securityman> getSecurityman()
     // {
     //     lock_guard<mutex> lock(db_mutex);

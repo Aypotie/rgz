@@ -91,6 +91,28 @@ public:
         return response;
     }
 
+    crow::json::wvalue getIncidents()
+    {
+        vector<IncidentListItem> incidents;
+        try
+        {
+            incidents = database.getIncidents();
+        }
+        catch (const exception &e)
+        {
+            cerr << "ERROR: " << e.what() << '\n';
+            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+        }
+
+        crow::json::wvalue response;
+        for (size_t i = 0; i < incidents.size(); i++)
+        {
+            response["incidents"][i] = incidents[i].render();
+        }
+
+        return response;
+    }
+
     void login(const crow::request &req, crow::response &res)
     {
         auto body = crow::json::load(req.body);

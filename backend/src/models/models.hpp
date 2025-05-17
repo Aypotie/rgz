@@ -83,15 +83,24 @@ struct Securityman
     }
 };
 
-struct Incident
+struct IncidentListItem
 {
     int id;
+    string created_time;
+    string incident_time;
+    string description;
+    string sector;
+    string status;
 
     crow::json::wvalue render()
     {
         crow::json::wvalue x;
         x["id"] = id;
-
+        x["created_at"] = created_time;
+        x["incident_time"] = incident_time,
+        x["description"] = description;
+        x["sector"] = sector;
+        x["status"] = status;
         return x;
     }
 };
