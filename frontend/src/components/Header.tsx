@@ -5,11 +5,11 @@ const Header = () => {
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3 fs-5">
-            <a className="navbar-brand fs-4" href="#">Система инцидентов</a>
+            <a className="navbar-brand fs-4" href="/">Система инцидентов</a>
             <div className="collapse navbar-collapse">
                 <ul className="navbar-nav me-auto">
                     <li className="nav-item">
-                        <a className="nav-link" href="/incidents">Инциденты</a>
+                        <a className="nav-link" href="/create_incident">Создать инцидент</a>
                     </li>
                     <li className="nav-item dropdown">
                         <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">

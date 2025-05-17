@@ -16,3 +16,7 @@ VALUES ('Драка'), ('Пожар'),
 
 INSERT INTO critical_level (name)
 VALUES ('Низкий'), ('Средний'), ('Высокий'), ('Очень высокий'), ('Критический');
+
+INSERT INTO incident (incident_time, description, status_id, securityman_id, type_incident_id, sector_id, critical_level_id) 
+VALUES ('2025-05-17 10:30:00', 'Конфликт между посетителями у входа A1', 1, 1, 1, 1, 3),
+('2025-05-17 12:33:00', 'Конфликт между посетителями у входа A1', 1, 1, 1, 2, 3);

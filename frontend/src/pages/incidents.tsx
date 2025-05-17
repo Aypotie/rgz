@@ -1,24 +1,15 @@
 import { useEffect, useState } from "react";
 import type { Incident } from "../models/models";
+import { getIncidents } from "../api/incident";
+import { normolizeTime } from "../utils/utils";
 
 export const IncidentsBySector = () => {
     const [incidents, setIncidents] = useState<Incident[]>([]);
 
     useEffect(() => {
         const fetchIncidents = async () => {
-            try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/incidents`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                const data = await res.json();
-                setIncidents(data.incidents); // Предполагается, что API возвращает { incidents: [...] }
-            } catch (error) {
-                console.error("Ошибка при загрузке инцидентов", error);
-            }
-        };
+            setIncidents((await getIncidents()).incidents);
+        }
 
         fetchIncidents();
     }, []);
@@ -38,10 +29,11 @@ export const IncidentsBySector = () => {
                     <ul className="list-group">
                         {grouped[sector].map(incident => (
                             <li key={incident.id} className="list-group-item">
-                                <strong>{incident.datetime}</strong>: {incident.description} —
-                                <span className="ms-2">Статус: {incident.status}</span>,
-                                <span className="ms-2">Тип: {incident.type}</span>,
-                                <span className="ms-2">Опасность: {incident.danger}</span>
+                                <strong>{normolizeTime(incident.incident_time)}</strong>:
+                                <span className="ms-2">{incident.description}</span><br></br>
+                                <span className="ms-2">Статус: {incident.status}</span>
+
+
                             </li>
                         ))}
                     </ul>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Status, Type } from "../models/models";
 import { getStatus, getType } from "../api/status";
 
-export const Home = () => {
+export const CreateIncident = () => {
     const [statuses, setStatuses] = useState<Array<Status> | null>(null);
     const [types, setTypes] = useState<Array<Type> | null>(null);
     const [dangerLevel, setDangerLevel] = useState<number | null>(null);

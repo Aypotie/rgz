@@ -10,12 +10,11 @@ export interface Type {
 
 export interface Incident {
     id: number;
-    datetime: string;
+    created_at: string;
+    incident_time: string;
     description: string;
     sector: string;
     status: string;
-    type: string;
-    danger: number;
 }
 
 export interface UserInfo {
