@@ -1,23 +1,30 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const Login = () => {
-    const [phoneNumber, setPhoneNumber] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [error, setError] = useState<string>('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = () => {
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:18080/api/securityman/login", {
+                phone: phoneNumber,
+                password: password
+            }, { withCredentials: true });
 
+            console.log('Login successful:', response.status);
 
-        // if (foundUser) {
-        //     setUserRole(foundUser[0]);
-        //     localStorage.setItem('userRole', foundUser[0]);
-        //     navigate('/');
-        // } else {
-        //     setError('Неверные данные!');
-        // }
+            navigate('/');
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Неверные данные!');
+        }
     };
+
 
     return (
         <div className="container my-5">

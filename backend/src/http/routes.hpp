@@ -6,12 +6,8 @@
 #include "middlewares/auth.hpp"
 #include "handlers.hpp"
 
-void initRoutes(crow::App<CORS, AuthMiddleware> &app, Handlers &h)
+void initRoutes(crow::App<crow::CORSHandler, AuthMiddleware> &app, Handlers &h)
 {
-    // CROW_ROUTE(app, "/api/securityman")
-    //     .methods("GET"_method)([&h]()
-    //                            { return h.getUser(); });
-
     CROW_ROUTE(app, "/api/status")
         .CROW_MIDDLEWARES(app, AuthMiddleware)
         .methods("GET"_method)([&h]()
@@ -36,6 +32,10 @@ void initRoutes(crow::App<CORS, AuthMiddleware> &app, Handlers &h)
                                {
         auto& ctx = app.get_context<AuthMiddleware>(req);
         h.getUser(ctx, res); });
+
+    CROW_ROUTE(app, "/api/securityman/logout")
+        .methods("GET"_method)([&h](const crow::request &req, crow::response &res)
+                               { return h.logout(req, res); });
 }
 
 #endif

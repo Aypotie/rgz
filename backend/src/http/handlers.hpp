@@ -151,6 +151,13 @@ public:
         res.end();
     }
 
+    void logout(const crow::request &req, crow::response &res)
+    {
+        res.code = 200;
+        res.add_header("Set-Cookie", string("token=") + "; Path=/; Max-Age=-1");
+        res.end();
+    }
+
     void getUser(const AuthMiddleware::context &ctx, crow::response &res)
     {
         if (!ctx.isAuthenticated || ctx.user == nullptr)

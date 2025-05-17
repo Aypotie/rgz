@@ -11,7 +11,7 @@ interface TypeResponse {
 }
 
 export const getStatus = async () => {
-    const response = await fetch(`${API_URL}/api/status`);
+    const response = await fetch(`${API_URL}/api/status`, { credentials: "include" });
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
@@ -20,7 +20,7 @@ export const getStatus = async () => {
 }
 
 export const getType = async () => {
-    const response = await fetch(`${API_URL}/api/type`);
+    const response = await fetch(`${API_URL}/api/type`, { credentials: "include" });
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }

@@ -24,7 +24,15 @@ int main()
         Database db(connInfo);
 
         auto h = Handlers(db, cfg.appConfig);
-        crow::App<CORS, AuthMiddleware> app;
+        crow::App<crow::CORSHandler, AuthMiddleware> app;
+        auto &cors = app.get_middleware<crow::CORSHandler>();
+        cors
+            .global()
+            .methods("POST"_method, "GET"_method, "OPTIONS"_method)
+            .prefix("/api")
+            .origin("http://localhost:5173")
+            .allow_credentials()
+            .headers("Content-Type", "Authorization");
 
         initRoutes(app, h);
         app.port(cfg.appConfig.port).multithreaded().run();
