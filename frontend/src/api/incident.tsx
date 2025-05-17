@@ -18,3 +18,15 @@ export const getIncidents = async () => {
     const data: IncidentsResponse = await res.json();
     return data;
 };
+
+export const createIncident = async (body: Object) => {
+    const res = await fetch(`${API_URL}/api/incident`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+        throw Error("Ошибка при создании инцидента")
+    }
+};

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Status, Type } from "../models/models";
 import { getStatus, getType } from "../api/status";
+import { createIncident } from "../api/incident";
+import { toast } from 'react-toastify';
+
 
 export const CreateIncident = () => {
     const [statuses, setStatuses] = useState<Array<Status> | null>(null);
@@ -30,6 +33,36 @@ export const CreateIncident = () => {
         fetchStatuses();
     }, []);
 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+
+        if (!selectedZone) {
+            alert("Пожалуйста, выберите сектор.");
+            return;
+        }
+
+        const payload = {
+            incident_time: formData.get("datetime"),
+            description: formData.get("description"),
+            status_id: Number(formData.get("status")),
+            type_incident_id: Number(formData.get("type")),
+            sector: selectedZone,
+            critical_level_id: dangerLevel
+        };
+
+        try {
+            await createIncident(payload);
+        } catch (e: any) {
+            toast.error(e.message);
+            return;
+        }
+
+        toast("Инцидент успешно создан");
+    };
+
+
     return (
         <div className="container-fluid arena-container">
             <div className="row h-100">
@@ -37,7 +70,7 @@ export const CreateIncident = () => {
                     <div className="card">
                         <div className="card-header fs-5">Добавить Инцидент</div>
                         <div className="card-body">
-                            <form>
+                            <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label className="form-label">Дата и время</label>
                                     <input type="datetime-local" className="form-control" name="datetime" />

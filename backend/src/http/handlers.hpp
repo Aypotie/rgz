@@ -203,5 +203,51 @@ public:
         res.end();
         ;
     }
+
+    void createIncident(const AuthMiddleware::context &ctx, const crow::request &req, crow::response &res)
+    {
+        if (!ctx.isAuthenticated || ctx.user == nullptr)
+        {
+            res.code = 401;
+            res.write(crow::json::wvalue{{"error", "Пользователь не авторизован"}}.dump());
+            res.end();
+            return;
+        }
+
+        Securityman *user = ctx.user;
+        auto body = crow::json::load(req.body);
+
+        if (!body || !body.has("incident_time") || !body.has("description") ||
+            !body.has("status_id") || !body.has("type_incident_id") || !body.has("sector") || !body.has("critical_level_id"))
+        {
+            res.code = 400;
+            res.write(crow::json::wvalue{{"error", "Неверный формат запроса"}}.dump());
+            res.end();
+            return;
+        }
+
+        try
+        {
+            int incidentId = database.createIncident(
+                body["incident_time"].s(),
+                body["description"].s(),
+                body["status_id"].i(),
+                user->id,
+                body["type_incident_id"].i(),
+                body["sector"].s(),
+                body["critical_level_id"].i());
+
+            res.code = 201;
+            res.write(crow::json::wvalue{{"id", incidentId}}.dump());
+            res.end();
+        }
+        catch (const exception &e)
+        {
+            cerr << "DB ERROR: " << e.what() << endl;
+            res.code = 500;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
+        }
+    }
 };
 #endif

@@ -174,6 +174,21 @@ public:
 
         return user;
     }
+
+    int createIncident(const string &incidentTime, const string &description, int statusId, int securitymanId, int typeIncidentId, string sector, int criticalLevelId)
+    {
+        lock_guard<mutex> lock(db_mutex);
+        pqxx::work tx{conn};
+
+        pqxx::result res = tx.exec_params(
+            "INSERT INTO incident (incident_time, description, status_id, type_incident_id, sector_id, securityman_id, critical_level_id) "
+            "VALUES ($1, $2, $3, $4, (SELECT id FROM sector WHERE name=$5), $6, $7) RETURNING id",
+            incidentTime, description, statusId, typeIncidentId, sector, securitymanId, criticalLevelId);
+
+        tx.commit();
+
+        return res[0][0].as<int>();
+    }
 };
 
 #endif

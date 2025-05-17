@@ -26,6 +26,12 @@ void initRoutes(crow::App<crow::CORSHandler, AuthMiddleware> &app, Handlers &h)
     CROW_ROUTE(app, "/api/securityman/login")
         .methods("POST"_method)([&h](const crow::request &req, crow::response &res)
                                 { return h.login(req, res); });
+    CROW_ROUTE(app, "/api/incident")
+        .CROW_MIDDLEWARES(app, AuthMiddleware)
+        .methods("POST"_method)([&h, &app](const crow::request &req, crow::response &res)
+                                {
+            auto& ctx = app.get_context<AuthMiddleware>(req);
+            return h.createIncident(ctx, req, res); });
     CROW_ROUTE(app, "/api/securityman")
         .CROW_MIDDLEWARES(app, AuthMiddleware)
         .methods("GET"_method)([&h, &app](const crow::request &req, crow::response &res)

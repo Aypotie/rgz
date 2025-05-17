@@ -1,9 +1,9 @@
-// App.tsx
 import { Routes, Route } from 'react-router-dom';
 import Login from './pages/login';
 import { IncidentsBySector } from './pages/incidents';
 import Header from './components/Header';
 import { AuthProvider } from './context/AuthContext';
+import { ToastContainer } from 'react-toastify';
 import { CreateIncident } from './pages/create_incident';
 
 import './index.css';
@@ -31,6 +31,7 @@ const App = () => {
           }
         />
       </Routes >
+      <ToastContainer position='top-right' autoClose={5000} />
     </>
   );
 

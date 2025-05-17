@@ -32,8 +32,6 @@ export const IncidentsBySector = () => {
                                 <strong>{normolizeTime(incident.incident_time)}</strong>:
                                 <span className="ms-2">{incident.description}</span><br></br>
                                 <span className="ms-2">Статус: {incident.status}</span>
-
-
                             </li>
                         ))}
                     </ul>
