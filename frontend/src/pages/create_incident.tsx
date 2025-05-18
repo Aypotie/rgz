@@ -10,8 +10,13 @@ export const CreateIncident = () => {
     const [types, setTypes] = useState<Array<Type> | null>(null);
     const [dangerLevel, setDangerLevel] = useState<number | null>(null);
     const [selectedZone, setSelectedZone] = useState<string | null>(null);
+    const [maxDateTime, setMaxDateTime] = useState("");
 
     useEffect(() => {
+        const now = new Date();
+        const formatted = now.toLocaleString().slice(0, 16);
+        setMaxDateTime(formatted);
+
         const fetchStatuses = async () => {
             try {
                 const response = await getStatus();
@@ -43,8 +48,19 @@ export const CreateIncident = () => {
             return;
         }
 
+        const datetimeValue = formData.get("datetime");
+        if (!datetimeValue) {
+            toast.error("Дата и время обязательны");
+            return;
+        }
+        const incident_time = new Date(datetimeValue.toString());
+        if (incident_time > new Date()) {
+            toast.error("Дата и время не должны превышать текущее");
+            return;
+        }
+
         const payload = {
-            incident_time: formData.get("datetime"),
+            incident_time: incident_time,
             description: formData.get("description"),
             status_id: Number(formData.get("status")),
             type_incident_id: Number(formData.get("type")),
@@ -73,7 +89,7 @@ export const CreateIncident = () => {
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label className="form-label">Дата и время</label>
-                                    <input type="datetime-local" className="form-control" name="datetime" />
+                                    <input type="datetime-local" className="form-control" name="datetime" max={maxDateTime} />
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Описание</label>
