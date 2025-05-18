@@ -1,0 +1,246 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Incident Management API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/status": {
+            "get": {
+                "summary": "Получить список статусов",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    }
+                }
+            }
+        },
+        "/api/type": {
+            "get": {
+                "summary": "Получить список типов инцидентов",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    }
+                }
+            }
+        },
+        "/api/sector": {
+            "get": {
+                "summary": "Получить список секторов",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    }
+                }
+            }
+        },
+        "/api/securityman/login": {
+            "post": {
+                "summary": "Аутентификация охранника",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "login",
+                                    "password"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный вход"
+                    },
+                    "401": {
+                        "description": "Неверные учетные данные"
+                    },
+                    "400": {
+                        "description": "Неправильный запрос"
+                    }
+                }
+            }
+        },
+        "/api/securityman": {
+            "get": {
+                "summary": "Получить информацию о текущем пользователе",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация о пользователе"
+                    }
+                }
+            }
+        },
+        "/api/securityman/logout": {
+            "get": {
+                "summary": "Выход пользователя",
+                "responses": {
+                    "200": {
+                        "description": "Выход выполнен"
+                    }
+                }
+            }
+        },
+        "/api/incident": {
+            "get": {
+                "summary": "Получить список инцидентов",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список инцидентов"
+                    },
+                    "501": {
+                        "description": "Внутренняя ошибка"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Создать инцидент",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "sector": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "critical_level": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "description",
+                                    "sector",
+                                    "type",
+                                    "critical_level"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Инцидент создан"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Удалить инцидент (по ID в теле запроса)",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Удалено"
+                    }
+                }
+            }
+        },
+        "/api/incident/{id}": {
+            "get": {
+                "summary": "Получить подробности инцидента",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация об инциденте"
+                    },
+                    "404": {
+                        "description": "Инцидент не найден"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "jwt"
+            }
+        }
+    }
+}

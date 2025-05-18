@@ -91,17 +91,40 @@ public:
         return response;
     }
 
-    crow::json::wvalue getIncidents()
+    void getIncidents(const crow::request &req, crow::response &res)
     {
         vector<IncidentListItem> incidents;
+        int count = 0;
+        res.add_header("Content-Type", "application/json");
+        auto idParam = req.url_params.get("sector_id");
+        auto pageParam = req.url_params.get("page");
+        auto limitParam = req.url_params.get("limit");
+        int sectorID = 0, page = 1, limit = 0;
+        if (idParam)
+        {
+            sectorID = atoi(idParam);
+        }
+        if (pageParam)
+        {
+            page = atoi(pageParam);
+        }
+        if (limitParam)
+        {
+            limit = atoi(limitParam);
+        }
         try
         {
-            incidents = database.getIncidents();
+            auto p = database.getIncidents(sectorID, page, limit);
+            incidents = p.first;
+            count = p.second;
         }
         catch (const exception &e)
         {
             cerr << "ERROR: " << e.what() << '\n';
-            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+            res.code = 500;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
+            return;
         }
 
         crow::json::wvalue response;
@@ -109,8 +132,19 @@ public:
         {
             response["incidents"][i] = incidents[i].render();
         }
+        if (incidents.empty())
+        {
+            response["incidents"] = crow::json::wvalue::list();
+            response["count"] = 0;
+        }
+        else
+        {
+            response["total"] = count;
+        }
 
-        return response;
+        res.code = 200;
+        res.write(response.dump());
+        res.end();
     }
 
     void login(const crow::request &req, crow::response &res)
@@ -251,14 +285,6 @@ public:
     }
     void deleteIncident(const AuthMiddleware::context &ctx, const crow::request &req, crow::response &res)
     {
-        if (!ctx.isAuthenticated || ctx.user == nullptr)
-        {
-            res.code = 401;
-            res.write(crow::json::wvalue{{"error", "Пользователь не авторизован"}}.dump());
-            res.end();
-            return;
-        }
-
         auto idParam = req.url_params.get("id");
         if (!idParam)
         {
@@ -283,6 +309,21 @@ public:
             res.code = 500;
             res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
             res.end();
+        }
+    }
+
+    crow::json::wvalue getIncident(int incidentId)
+    {
+        try
+        {
+            Incident incident = database.getIncident(incidentId);
+
+            return incident.render();
+        }
+        catch (const exception &e)
+        {
+            cerr << "ERROR: " << e.what() << '\n';
+            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
         }
     }
 };

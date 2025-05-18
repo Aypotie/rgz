@@ -96,38 +96,76 @@ public:
         return sectorList;
     }
 
-    vector<IncidentListItem> getIncidents()
+    pair<vector<IncidentListItem>, int> getIncidents(int sectorID, int page, int limit)
     {
         lock_guard<mutex> lock(db_mutex);
+        int offset = (page - 1) * limit;
+        bool isParam = false;
         vector<IncidentListItem> incidentList;
         pqxx::work tx{conn};
 
-        pqxx::result res = tx.exec(
-            "SELECT "
-            "i.id, i.created_at, i.incident_time, i.description, "
-            "s.name AS sector_name, "
-            "st.name AS status_name "
-            "FROM incident i "
-            "JOIN sector s ON s.id = i.sector_id "
-            "JOIN status st ON st.id = i.status_id ");
+        // 1. Запрос для получения данных с пагинацией
+        string query = "SELECT "
+                       "i.id, i.created_at, i.incident_time, i.description, "
+                       "s.name AS sector_name, "
+                       "st.name AS status_name "
+                       "FROM incident i "
+                       "JOIN sector s ON s.id = i.sector_id "
+                       "JOIN status st ON st.id = i.status_id";
+
+        if (sectorID != 0)
+        {
+            query += " WHERE s.id = $1";
+            isParam = true;
+        }
+
+        // Добавляем сортировку для стабильной пагинации
+        query += " ORDER BY i.id";
+
+        if (limit > 0)
+        {
+            query += " LIMIT " + to_string(limit);
+        }
+        if (offset > 0)
+        {
+            query += " OFFSET " + to_string(offset);
+        }
+
+        pqxx::result res;
+        if (isParam)
+        {
+            res = tx.exec_params(query, sectorID);
+        }
+        else
+        {
+            res = tx.exec(query);
+        }
 
         for (const auto &row : res)
         {
             IncidentListItem incident;
-
             incident.id = row["id"].as<int>();
             incident.created_time = row["created_at"].as<string>();
             incident.incident_time = row["incident_time"].as<string>();
             incident.description = row["description"].as<string>();
             incident.sector = row["sector_name"].as<string>();
             incident.status = row["status_name"].as<string>();
-
             incidentList.push_back(incident);
         }
 
+        // 2. Запрос для получения общего количества
+        string countQuery = "SELECT COUNT(*) FROM incident i";
+        if (sectorID != 0)
+        {
+            countQuery += " WHERE i.sector_id = " + to_string(sectorID);
+        }
+
+        pqxx::result countRes = tx.exec(countQuery);
+        int totalCount = countRes[0][0].as<int>();
+
         tx.commit();
 
-        return incidentList;
+        return make_pair(incidentList, totalCount);
     }
 
     // vector<Securityman> getSecurityman()
@@ -201,5 +239,55 @@ public:
 
         return true;
     };
+
+    Incident getIncident(int id)
+    {
+        lock_guard<mutex> lock(db_mutex);
+        pqxx::work tx{conn};
+
+        pqxx::result res = tx.exec_params(R"(
+        SELECT 
+            i.id,
+            i.created_at,
+            i.incident_time,
+            i.description,
+            s.name AS sector,
+            st.name AS status,
+            ti.name AS type,
+            cl.name AS critical_level,
+            sm.id AS securityman_id,
+            sm.surname,
+            sm.name,
+            sm.last_name
+        FROM incident i
+        JOIN sector s ON s.id = i.sector_id
+        JOIN status st ON st.id = i.status_id
+        JOIN type_incident ti ON ti.id = i.type_incident_id
+        JOIN critical_level cl ON cl.id = i.critical_level_id
+        JOIN securityman sm ON sm.id = i.securityman_id
+        WHERE i.id = $1
+    )",
+                                          id);
+
+        if (res.empty())
+            throw runtime_error("Инцидент не найден");
+
+        const auto &row = res[0];
+        Incident incident;
+        incident.id = row["id"].as<int>();
+        incident.created_time = row["created_at"].as<string>();
+        incident.incident_time = row["incident_time"].as<string>();
+        incident.description = row["description"].as<string>();
+        incident.sector = row["sector"].as<string>();
+        incident.status = row["status"].as<string>();
+        incident.type = row["type"].as<string>();
+        incident.critical_level = row["critical_level"].as<string>();
+        incident.securityman_id = row["securityman_id"].as<int>();
+        incident.securityman_name = row["name"].as<string>();
+        incident.securityman_surname = row["surname"].as<string>();
+        incident.securityman_lastname = row["last_name"].as<string>();
+
+        return incident;
+    }
 };
 #endif

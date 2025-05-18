@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Status, Type } from "../models/models";
-import { getStatus, getType } from "../api/status";
+import { getStatus, getType } from "../api/other";
 import { createIncident } from "../api/incident";
 import { toast } from 'react-toastify';
+import { Selector } from "../components/Selector";
 
 
 export const CreateIncident = () => {
@@ -10,7 +11,9 @@ export const CreateIncident = () => {
     const [types, setTypes] = useState<Array<Type> | null>(null);
     const [dangerLevel, setDangerLevel] = useState<number | null>(null);
     const [selectedZone, setSelectedZone] = useState<string | null>(null);
-    const [maxDateTime, setMaxDateTime] = useState("");
+    const [maxDateTime, setMaxDateTime] = useState<string>("");
+    const [selectedStatus, setSelectedStatus] = useState<number>(0);
+    const [selectedIncidentType, setSelectedIncidentType] = useState<number>(0);
 
     useEffect(() => {
         const now = new Date();
@@ -20,17 +23,19 @@ export const CreateIncident = () => {
         const fetchStatuses = async () => {
             try {
                 const response = await getStatus();
+                if (response.status.length > 0) setSelectedStatus(response.status[0].id);
                 setStatuses(response.status);
-            } catch (e) {
-                console.error("Failed to load statuses", e);
+            } catch (e: any) {
+                toast.error(e.message);
             }
         };
         const fetchTypes = async () => {
             try {
                 const response = await getType();
+                if (response.type.length > 0) setSelectedIncidentType(response.type[0].id);
                 setTypes(response.type);
-            } catch (e) {
-                console.error("Failed to load types", e);
+            } catch (e: any) {
+                toast.error(e.message);
             }
         };
 
@@ -62,8 +67,8 @@ export const CreateIncident = () => {
         const payload = {
             incident_time: incident_time,
             description: formData.get("description"),
-            status_id: Number(formData.get("status")),
-            type_incident_id: Number(formData.get("type")),
+            status_id: selectedStatus,
+            type_incident_id: selectedIncidentType,
             sector: selectedZone,
             critical_level_id: dangerLevel
         };
@@ -95,22 +100,8 @@ export const CreateIncident = () => {
                                     <label className="form-label">Описание</label>
                                     <textarea className="form-control" name="description" rows={3}></textarea>
                                 </div>
-                                <div className="mb-3">
-                                    <label className="form-label">Статус</label>
-                                    <select className="form-select" name="status">
-                                        {statuses && statuses.map(status => (
-                                            <option key={status.id} value={status.id}>{status.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">Тип инцидента</label>
-                                    <select className="form-select" name="type">
-                                        {types && types.map(type => (
-                                            <option key={type.id} value={type.id}>{type.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {statuses && <Selector data={statuses} label="Статус" setSelectedElement={setSelectedStatus} selectedValue={selectedStatus}></Selector>}
+                                {types && <Selector data={types} label="Тип инцидента" setSelectedElement={setSelectedIncidentType} selectedValue={selectedIncidentType}></Selector>}
                                 <div className="mb-3">
                                     <label className="form-label">Сектор</label>
                                     <input
