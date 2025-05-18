@@ -28,7 +28,6 @@ int main()
         auto &cors = app.get_middleware<crow::CORSHandler>();
         cors
             .global()
-            .methods("POST"_method, "GET"_method, "OPTIONS"_method)
             .prefix("/api")
             .origin("http://localhost:5173")
             .allow_credentials()

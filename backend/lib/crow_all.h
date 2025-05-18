@@ -13175,7 +13175,7 @@ namespace crow
             if (ignore_)
                 return;
 
-            set_header_no_override("Access-Control-Allow-Methods", methods_, res);
+            set_header_no_override("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT, PATCH", res);
             set_header_no_override("Access-Control-Allow-Headers", headers_, res);
             set_header_no_override("Access-Control-Expose-Headers", exposed_headers_, res);
             set_header_no_override("Access-Control-Max-Age", max_age_, res);

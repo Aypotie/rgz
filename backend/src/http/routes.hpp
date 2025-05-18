@@ -46,6 +46,12 @@ void initRoutes(crow::App<crow::CORSHandler, AuthMiddleware> &app, Handlers &h)
         .CROW_MIDDLEWARES(app, AuthMiddleware)
         .methods("GET"_method)([&h]()
                                { return h.getIncidents(); });
+    CROW_ROUTE(app, "/api/incident")
+        .CROW_MIDDLEWARES(app, AuthMiddleware)
+        .methods("DELETE"_method)([&h, &app](const crow::request &req, crow::response &res)
+                                  {
+        auto& ctx = app.get_context<AuthMiddleware>(req);
+        h.deleteIncident(ctx, req, res); });
 }
 
 #endif

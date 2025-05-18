@@ -189,6 +189,17 @@ public:
 
         return res[0][0].as<int>();
     }
-};
 
+    bool deleteIncident(int id)
+    {
+        lock_guard<mutex> lock(db_mutex);
+        pqxx::work tx{conn};
+
+        pqxx::result res = tx.exec_params("DELETE FROM incident WHERE id = $1", id);
+
+        tx.commit();
+
+        return true;
+    };
+};
 #endif

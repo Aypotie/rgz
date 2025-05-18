@@ -29,4 +29,18 @@ export const createIncident = async (body: Object) => {
     if (!res.ok) {
         throw Error("Ошибка при создании инцидента")
     }
+
+};
+
+export const deleteIncident = async (id: number) => {
+    const res = await fetch(`${API_URL}/api/incident?id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        throw new Error("Ошибка при удалении инцидента");
+    }
+
+    return await res.json();
 };

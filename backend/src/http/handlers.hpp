@@ -249,5 +249,41 @@ public:
             res.end();
         }
     }
+    void deleteIncident(const AuthMiddleware::context &ctx, const crow::request &req, crow::response &res)
+    {
+        if (!ctx.isAuthenticated || ctx.user == nullptr)
+        {
+            res.code = 401;
+            res.write(crow::json::wvalue{{"error", "Пользователь не авторизован"}}.dump());
+            res.end();
+            return;
+        }
+
+        auto idParam = req.url_params.get("id");
+        if (!idParam)
+        {
+            res.code = 400;
+            res.write(crow::json::wvalue{{"error", "Отсутствует параметр id"}}.dump());
+            res.end();
+            return;
+        }
+
+        int id = atoi(idParam);
+
+        try
+        {
+            database.deleteIncident(id);
+            res.code = 200;
+            res.write(crow::json::wvalue{{"message", "Инцидент удалён"}}.dump());
+            res.end();
+        }
+        catch (const std::exception &e)
+        {
+            cerr << "DB ERROR: " << e.what() << endl;
+            res.code = 500;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
+        }
+    }
 };
 #endif
