@@ -228,7 +228,23 @@ public:
         return res[0][0].as<int>();
     }
 
-    bool deleteIncident(int id)
+    void updateIncident(
+        const string &incidentTime, const string &description, int statusId,
+        int typeIncidentId, string sector, int criticalLevelId,
+        int incidentId)
+    {
+        lock_guard<mutex> lock(db_mutex);
+        pqxx::work tx{conn};
+
+        pqxx::result res = tx.exec_params(
+            "UPDATE incident SET incident_time=$1, description=$2, status_id=$3, type_incident_id=$4, "
+            "sector_id=(SELECT id FROM sector WHERE name=$5), critical_level_id=$6 WHERE id = $7",
+            incidentTime, description, statusId, typeIncidentId, sector, criticalLevelId, incidentId);
+
+        tx.commit();
+    }
+
+    void deleteIncident(int id)
     {
         lock_guard<mutex> lock(db_mutex);
         pqxx::work tx{conn};
@@ -236,8 +252,6 @@ public:
         pqxx::result res = tx.exec_params("DELETE FROM incident WHERE id = $1", id);
 
         tx.commit();
-
-        return true;
     };
 
     Incident getIncident(int id)

@@ -300,10 +300,44 @@ public:
         {
             database.deleteIncident(id);
             res.code = 200;
-            res.write(crow::json::wvalue{{"message", "Инцидент удалён"}}.dump());
             res.end();
         }
         catch (const std::exception &e)
+        {
+            cerr << "DB ERROR: " << e.what() << endl;
+            res.code = 500;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
+        }
+    }
+
+    void updateIncident(const crow::request &req, crow::response &res, int incidentId)
+    {
+        auto body = crow::json::load(req.body);
+        if (!body || !body.has("incident_time") || !body.has("description") ||
+            !body.has("status_id") || !body.has("type_incident_id") || !body.has("sector") || !body.has("critical_level_id"))
+        {
+            res.code = 400;
+            res.write(crow::json::wvalue{{"error", "Неверный формат запроса"}}.dump());
+            res.end();
+            return;
+        }
+
+        try
+        {
+            database.updateIncident(
+                body["incident_time"].s(),
+                body["description"].s(),
+                body["status_id"].i(),
+                body["type_incident_id"].i(),
+                body["sector"].s(),
+                body["critical_level_id"].i(),
+                incidentId);
+
+            res.code = 200;
+            res.end();
+        }
+        catch (const exception &e)
         {
             cerr << "DB ERROR: " << e.what() << endl;
             res.code = 500;

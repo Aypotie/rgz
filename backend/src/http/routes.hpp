@@ -52,6 +52,11 @@ void initRoutes(crow::App<crow::CORSHandler, AuthMiddleware> &app, Handlers &h)
         .methods("GET"_method)([&h](const crow::request &req, int incidentId)
                                { return h.getIncident(incidentId); });
 
+    CROW_ROUTE(app, "/api/incident/<int>")
+        .CROW_MIDDLEWARES(app, AuthMiddleware)
+        .methods("PUT"_method)([&h, &app](const crow::request &req, crow::response &res, int incidentId)
+                               { h.updateIncident(req, res, incidentId); });
+
     CROW_ROUTE(app, "/api/incident")
         .CROW_MIDDLEWARES(app, AuthMiddleware)
         .methods("DELETE"_method)([&h, &app](const crow::request &req, crow::response &res)
