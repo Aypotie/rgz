@@ -1,545 +1,542 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-        "title": "API Мониторинга Арены",
-        "version": "1.0.0",
-        "description": "API для управления инцидентами на арене"
-    },
-    "servers": [
-        {
-            "url": "http://localhost:18080",
-            "description": "Локальный сервер разработки"
-        }
-    ],
-    "paths": {
-        "/api/status": {
-            "get": {
-                "tags": [
-                    "Статусы"
-                ],
-                "summary": "Получить список статусов",
-                "responses": {
-                    "200": {
-                        "description": "Список статусов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "status": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "name": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/type": {
-            "get": {
-                "tags": [
-                    "Типы"
-                ],
-                "summary": "Получить список типов инцидентов",
-                "responses": {
-                    "200": {
-                        "description": "Список типов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "type": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "name": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/sector": {
-            "get": {
-                "tags": [
-                    "Секторы"
-                ],
-                "summary": "Получить список секторов",
-                "responses": {
-                    "200": {
-                        "description": "Список секторов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "sector": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "name": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/securityman/login": {
-            "post": {
-                "tags": [
-                    "Аутентификация"
-                ],
-                "summary": "Вход в систему",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "phone": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "phone",
-                                    "password"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Успешный вход",
-                        "headers": {
-                            "Set-Cookie": {
-                                "schema": {
-                                    "type": "string",
-                                    "example": "token=JWT_TOKEN; HttpOnly; Path=/; Max-Age=3600"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "401": {
-                        "description": "Неверные учетные данные"
-                    },
-                    "404": {
-                        "description": "Пользователь не найден"
-                    }
-                }
-            }
-        },
-        "/api/securityman/logout": {
-            "get": {
-                "tags": [
-                    "Аутентификация"
-                ],
-                "summary": "Выход из системы",
-                "responses": {
-                    "200": {
-                        "description": "Успешный выход",
-                        "headers": {
-                            "Set-Cookie": {
-                                "schema": {
-                                    "type": "string",
-                                    "example": "token=; Path=/; Max-Age=-1"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/securityman": {
-            "get": {
-                "tags": [
-                    "Аутентификация"
-                ],
-                "summary": "Получить информацию о текущем пользователе",
-                "responses": {
-                    "200": {
-                        "description": "Информация о пользователе",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "phone": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "surname": {
-                                            "type": "string"
-                                        },
-                                        "lastname": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/incident": {
-            "get": {
-                "tags": [
-                    "Инциденты"
-                ],
-                "summary": "Получить список инцидентов",
-                "parameters": [
-                    {
-                        "name": "sector_id",
-                        "in": "query",
-                        "description": "ID сектора для фильтрации",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Номер страницы",
-                        "schema": {
-                            "type": "integer",
-                            "default": 1
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Количество элементов на странице",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Список инцидентов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "incidents": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "created_time": {
-                                                        "type": "string"
-                                                    },
-                                                    "incident_time": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": {
-                                                        "type": "string"
-                                                    },
-                                                    "sector": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "total": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Инциденты"
-                ],
-                "summary": "Создать новый инцидент",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "incident_time": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "status_id": {
-                                        "type": "integer"
-                                    },
-                                    "type_incident_id": {
-                                        "type": "integer"
-                                    },
-                                    "sector": {
-                                        "type": "string"
-                                    },
-                                    "critical_level_id": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "required": [
-                                    "incident_time",
-                                    "description",
-                                    "status_id",
-                                    "type_incident_id",
-                                    "sector",
-                                    "critical_level_id"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Инцидент создан",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Инциденты"
-                ],
-                "summary": "Удалить инцидент",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "query",
-                        "description": "ID инцидента",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Инцидент удален"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/incident/{incidentId}": {
-            "get": {
-                "tags": [
-                    "Инциденты"
-                ],
-                "summary": "Получить детальную информацию об инциденте",
-                "parameters": [
-                    {
-                        "name": "incidentId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Детальная информация об инциденте",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "created_at": {
-                                            "type": "string"
-                                        },
-                                        "incident_time": {
-                                            "type": "string"
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "sector": {
-                                            "type": "string"
-                                        },
-                                        "status": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        },
-                                        "critical_level": {
-                                            "type": "string"
-                                        },
-                                        "securityman_name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        }
-    },
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            }
-        }
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Incident Management API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:18080"
     }
+  ],
+  "components": {
+    "securitySchemes": {
+      "CookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token"
+      }
+    },
+    "schemas": {
+      "Status": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Type": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Sector": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "IncidentListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "incident_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sector": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "incident_time",
+          "description",
+          "sector",
+          "status"
+        ]
+      },
+      "Incident": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/IncidentListItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "critical_level": {
+                "type": "string"
+              },
+              "securityman_id": {
+                "type": "integer"
+              },
+              "securityman_name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "critical_level",
+              "securityman_id",
+              "securityman_name"
+            ]
+          }
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "phone",
+          "name",
+          "surname",
+          "lastname"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/api/status": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Список статусов",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Status"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/type": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Список типов инцидентов",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Type"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sector": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Список секторов",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sector": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Sector"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/securityman/login": {
+      "post": {
+        "summary": "Логин",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "phone",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/api/securityman": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Информация о текущем пользователе",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/api/securityman/logout": {
+      "get": {
+        "summary": "Логаут",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          }
+        }
+      }
+    },
+    "/api/incident": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Список инцидентов с фильтром и пагинацией",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sector_id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "ID сектора"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "incidents": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IncidentListItem"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Создать инцидент",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "incident_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status_id": {
+                    "type": "integer"
+                  },
+                  "type_incident_id": {
+                    "type": "integer"
+                  },
+                  "sector": {
+                    "type": "string"
+                  },
+                  "critical_level_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "incident_time",
+                  "description",
+                  "status_id",
+                  "type_incident_id",
+                  "sector",
+                  "critical_level_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/api/incident/{id}": {
+      "get": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Получить полный инцидент",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Обновить инцидент",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "incident_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "status_id": {
+                    "type": "integer"
+                  },
+                  "type_incident_id": {
+                    "type": "integer"
+                  },
+                  "critical_level_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "incident_time",
+                  "description",
+                  "status_id",
+                  "type_incident_id",
+                  "critical_level_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "CookieAuth": []
+          }
+        ],
+        "summary": "Удалить инцидент",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
 }

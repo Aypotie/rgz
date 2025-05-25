@@ -230,7 +230,7 @@ public:
 
     void updateIncident(
         const string &incidentTime, const string &description, int statusId,
-        int typeIncidentId, string sector, int criticalLevelId,
+        int typeIncidentId, int criticalLevelId,
         int incidentId)
     {
         lock_guard<mutex> lock(db_mutex);
@@ -238,8 +238,8 @@ public:
 
         pqxx::result res = tx.exec_params(
             "UPDATE incident SET incident_time=$1, description=$2, status_id=$3, type_incident_id=$4, "
-            "sector_id=(SELECT id FROM sector WHERE name=$5), critical_level_id=$6 WHERE id = $7",
-            incidentTime, description, statusId, typeIncidentId, sector, criticalLevelId, incidentId);
+            "critical_level_id=$5 WHERE id = $6",
+            incidentTime, description, statusId, typeIncidentId, criticalLevelId, incidentId);
 
         tx.commit();
     }

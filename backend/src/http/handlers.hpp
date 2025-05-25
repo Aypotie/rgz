@@ -315,7 +315,7 @@ public:
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("incident_time") || !body.has("description") ||
-            !body.has("status_id") || !body.has("type_incident_id") || !body.has("sector") || !body.has("critical_level_id"))
+            !body.has("status_id") || !body.has("type_incident_id") || !body.has("critical_level_id"))
         {
             res.code = 400;
             res.write(crow::json::wvalue{{"error", "Неверный формат запроса"}}.dump());
@@ -330,7 +330,6 @@ public:
                 body["description"].s(),
                 body["status_id"].i(),
                 body["type_incident_id"].i(),
-                body["sector"].s(),
                 body["critical_level_id"].i(),
                 incidentId);
 

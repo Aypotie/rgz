@@ -1,4 +1,4 @@
-import type { IncidentListItem } from "../models/models";
+import type { Incident, IncidentListItem } from "../models/models";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -57,3 +57,15 @@ export const deleteIncident = async (id: number) => {
 
     return await res.json();
 };
+
+export const updateIncident = async (id: number, incident: Object) => {
+    const res = await fetch(`${API_URL}/api/incident/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify(incident)
+    });
+
+    if (!res.ok) {
+        throw new Error("Ошибка при обновлении инцидента");
+    }
+}

@@ -4,6 +4,7 @@ import { getStatus, getType } from "../api/other";
 import { createIncident } from "../api/incident";
 import { toast } from 'react-toastify';
 import { Selector } from "../components/Selector";
+import { CriticalLevel } from "../components/CriticalLevel";
 
 
 export const CreateIncident = () => {
@@ -63,6 +64,10 @@ export const CreateIncident = () => {
             toast.error("Дата и время не должны превышать текущее");
             return;
         }
+        if (dangerLevel == null) {
+            toast.error("Необходимо ввести уровень критичности")
+            return;
+        }
 
         const payload = {
             incident_time: incident_time,
@@ -115,31 +120,7 @@ export const CreateIncident = () => {
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">Уровень опасности</label>
-                                    <div className="d-flex justify-content-between">
-                                        {[1, 2, 3, 4, 5].map(level => {
-                                            const bgColor =
-                                                level === 1 ? 'bg-success' :
-                                                    level === 2 ? 'bg-level-2' :
-                                                        level === 3 ? 'bg-warning' :
-                                                            level === 4 ? 'bg-level-4' :
-                                                                'bg-danger';
-
-                                            return (
-                                                <div
-                                                    key={level}
-                                                    className={`danger-box ${bgColor} ${dangerLevel === level ? 'border border-dark' : ''}`}
-                                                    data-level={level}
-                                                    onClick={() => setDangerLevel(level)}
-                                                    style={{
-                                                        width: '18%',
-                                                        height: '20px',
-                                                        borderRadius: '4px',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                />
-                                            );
-                                        })}
-                                    </div>
+                                    <CriticalLevel dangerLevel={dangerLevel} setDangerLevel={setDangerLevel} />
                                     <input type="hidden" name="danger" id="dangerValue" />
                                 </div>
                                 <button type="submit" className="btn btn-primary mt-2">Сохранить</button>
