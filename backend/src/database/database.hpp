@@ -26,11 +26,11 @@ public:
 
     ~Database()
     {
-        if (conn.is_open())
-        {
-            cout << "Closing database connection..." << endl;
-            conn.disconnect();
-        }
+        // if (conn.is_open())
+        // {
+        //     cout << "Closing database connection..." << endl;
+        //     conn.disconnect();
+        // }
     }
 
     vector<Status> getStatus()

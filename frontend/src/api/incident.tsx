@@ -1,4 +1,4 @@
-import type { Incident, IncidentListItem } from "../models/models";
+import type { IncidentListItem } from "../models/models";
 
 const API_URL = import.meta.env.VITE_API_URL;
 

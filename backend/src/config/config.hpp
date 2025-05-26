@@ -18,6 +18,7 @@ struct DBConfig
 
 struct AppConfig
 {
+    string env;
     string host;
     int port;
     string jwtSecret;
@@ -37,6 +38,7 @@ config loadConfig()
     // DBConfig config
 
     config cfg;
+    cfg.appConfig.env = get_env_or_throw("ENV");
 
     DBConfig dbcfg;
     dbcfg.host = get_env_or_throw("POSTGRES_HOST");

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "bcrypt/BCrypt.hpp"
+#include "../../lib/bcrypt/BCrypt.hpp"
 #include "../database/database.hpp"
 #include "../../lib/jwt-cpp/jwt.h"
 #include "../config/config.hpp"
