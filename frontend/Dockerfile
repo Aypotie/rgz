@@ -7,6 +7,7 @@ COPY package.json .
 RUN npm i
 
 COPY . .
+COPY .env.docker .env
 
 RUN npm run build
 

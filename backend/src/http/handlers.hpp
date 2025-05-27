@@ -345,18 +345,30 @@ public:
         }
     }
 
-    crow::json::wvalue getIncident(int incidentId)
+    void getIncident(const crow::request &req, crow::response &res, int incidentId)
     {
         try
         {
             Incident incident = database.getIncident(incidentId);
 
-            return incident.render();
+            res.code = 200;
+            res.write(incident.render().dump());
+            res.end();
         }
         catch (const exception &e)
         {
-            cerr << "ERROR: " << e.what() << '\n';
-            return crow::json::wvalue{{"error", ERROR_INTERNAL}};
+            string error(e.what());
+            if (error == "Инцидент не найден")
+            {
+                res.code = 404;
+                res.write(crow::json::wvalue{{"error", error}}.dump());
+                res.end();
+                return;
+            }
+            cerr << "DB ERROR: " << error << endl;
+            res.code = 500;
+            res.write(crow::json::wvalue{{"error", ERROR_INTERNAL}}.dump());
+            res.end();
         }
     }
 };
