@@ -91,8 +91,58 @@ export const IncidentsBySector = () => {
     };
 
     const handleDelete = async (id: number) => {
-        await deleteIncident(id);
-        setIncidents(prev => prev.filter(i => i.id !== id));
+        if (!window.confirm("Вы уверены, что хотите удалить этот инцидент?")) {
+            return;
+        }
+
+        try {
+            // Оптимистичное обновление UI
+            setIncidents(prev => prev.filter(i => i.id !== id));
+            setTotalIncidents(prev => prev - 1);
+
+            if (expandedId === id) {
+                setExpandedId(null);
+                setDetailedIncident(null);
+            }
+
+            // Отправляем запрос на удаление
+            const response = await deleteIncident(id);
+
+            if (!response.ok) {
+                throw new Error("Ошибка при удалении");
+            }
+
+            toast.success("Инцидент успешно удалён");
+
+            // Проверяем, остались ли элементы на текущей странице
+            const shouldGoToPrevPage = incidents.length === 1 && currentPage > 1;
+            const newPage = shouldGoToPrevPage ? currentPage - 1 : currentPage;
+
+            if (shouldGoToPrevPage) {
+                setCurrentPage(newPage);
+            } else {
+                // Полная перезагрузка данных
+                const refreshed = await getIncidentsBySectorID(
+                    selectedSector,
+                    newPage,
+                    PAGE_SIZE
+                );
+                setIncidents(refreshed.incidents);
+                setTotalIncidents(refreshed.total);
+            }
+        } catch (error) {
+            // Восстанавливаем состояние при ошибке
+            const refreshed = await getIncidentsBySectorID(
+                selectedSector,
+                currentPage,
+                PAGE_SIZE
+            );
+            setIncidents(refreshed.incidents);
+            setTotalIncidents(refreshed.total);
+
+            toast.error("Ошибка при удалении инцидента");
+            console.error("Delete error:", error);
+        }
     };
 
     // открыть модалку и заполнить поля формы
@@ -184,6 +234,7 @@ export const IncidentsBySector = () => {
                         {expandedId === i.id && detailedIncident && (
                             <div className="mt-2 ms-2">
                                 <div>Тип: {detailedIncident.type}</div>
+                                <div>Статус: {detailedIncident.status}</div>
                                 <div>Критичность: {detailedIncident.critical_level}</div>
                                 <div>Охранник: {detailedIncident.securityman_name}</div>
                                 <div>Создано: {normolizeTime(detailedIncident.created_at)}</div>

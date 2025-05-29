@@ -300,6 +300,7 @@ public:
         {
             database.deleteIncident(id);
             res.code = 200;
+            res.write(crow::json::wvalue{{"ok", true}}.dump()); // Добавлен JSON-ответ
             res.end();
         }
         catch (const std::exception &e)

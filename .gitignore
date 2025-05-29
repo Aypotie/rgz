@@ -3,3 +3,6 @@ todo
 main
 hash.cpp
 db.cpp
+venv
+__pycache__
+.pytest_cache
