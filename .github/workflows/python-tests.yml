@@ -5,7 +5,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # Увеличиваем таймаут
+    timeout-minutes: 20 # Увеличиваем таймаут
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
           docker compose -f docker-compose.ci.yml up -d --build
 
           # Ждем готовности бэкенда
-          sleep 20
+          sleep 40
 
       - name: Verify services
         run: |
