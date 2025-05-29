@@ -1,4 +1,4 @@
-name: Python Tests
+name: Python Tests with Docker
 
 on: [push]
 
@@ -6,20 +6,55 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: lab4
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U user -d lab4
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+
+      - name: Start backend
+        run: |
+          docker compose -f docker-compose.ci.yml up -d --build backend
+          sleep 20  # Wait for backend initialization
+
+      - name: Verify containers
+        run: |
+          docker ps -a
+          docker logs backend
+          curl -v http://localhost:18080/api/health
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest requests
+        run: pip install pytest requests
 
       - name: Run tests
+        env:
+          API_BASE_URL: "http://localhost:18080"
         run: |
-          cd backend/test  
+          cd backend/test
           pytest -v
+
+      - name: Stop containers
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down
