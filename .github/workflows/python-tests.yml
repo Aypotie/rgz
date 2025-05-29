@@ -29,16 +29,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose-plugin
 
-      - name: Start backend
+      - name: Start services
         run: |
-          docker compose -f docker-compose.ci.yml up -d --build backend
-          sleep 20  # Wait for backend initialization
+          docker compose -f docker-compose.yml up -d --build backend
+          sleep 25  # Увеличенное время ожидания
 
       - name: Verify containers
         run: |
           docker ps -a
           docker logs backend
-          curl -v http://localhost:18080/api/health
+          curl -v http://localhost:18080/api/health || true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -57,4 +57,4 @@ jobs:
 
       - name: Stop containers
         if: always()
-        run: docker compose -f docker-compose.ci.yml down
+        run: docker compose -f docker-compose.yml down

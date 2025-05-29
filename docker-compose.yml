@@ -1,57 +1,37 @@
+version: '3.8'
+
 services:
   db:
-    image: postgres
-    restart: on-failure
+    image: postgres:13
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: lab4
     ports:
-      - 5434:5432
+      - "5432:5432"
     volumes:
-      - ./migrations:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d lab4"]
-      interval: 30s
+      interval: 5s
       timeout: 5s
-      retries: 3
-      start_period: 10s
-    networks:
-      my_network:
-        ipv4_address: 172.38.0.20
+      retries: 10
 
   backend:
     build:
       context: backend
       dockerfile: Dockerfile
     ports:
-      - 127.0.0.1:18080:18080
-    restart: on-failure
+      - "18080:18080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: lab4
     depends_on:
       db:
-        condition: service_healthy  
-    networks:
-      my_network:
-        ipv4_address: 172.38.0.21
-  
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - 80:80
-    restart: on-failure
-    depends_on:
-      - backend
-    healthcheck:
-      test: ["CMD", "curl", "http://127.0.0.1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+        condition: service_healthy
 
-networks:
-  my_network:
-    ipam:
-      config:
-        - subnet: 172.38.0.0/16
+volumes:
+  postgres_data:
