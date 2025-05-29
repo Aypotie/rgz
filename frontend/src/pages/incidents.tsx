@@ -78,7 +78,7 @@ export const IncidentsBySector = () => {
             });
     }, [selectedSector, currentPage]);
 
-    // показать свёрнутую деталь
+    // показать свернутую деталь
     const handleToggle = async (id: number) => {
         if (expandedId === id) {
             setExpandedId(null);
