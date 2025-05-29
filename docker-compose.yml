@@ -8,14 +8,19 @@ services:
     ports:
       - "18080:18080"
     environment:
-      DB_HOST: postgres  # Используем имя контейнера
-      DB_PORT: 5432
-      DB_USER: user
-      DB_PASSWORD: password
-      DB_NAME: lab4
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_USER: "user"
+      DB_PASSWORD: "password"
+      DB_NAME: "lab4"
     networks:
-      - test-network
+      - test-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
-  test-network:
+  test-net:
     external: true
