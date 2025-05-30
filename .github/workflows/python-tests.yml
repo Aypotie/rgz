@@ -4,8 +4,8 @@ on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20 # Увеличиваем таймаут
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -13,56 +13,28 @@ jobs:
       - name: Set up Docker
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose-plugin
+          sudo apt-get install ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin python3 python3-pip python3-venv
+          python3 -m venv venv
 
       - name: Start infrastructure
         run: |
-          # Создаем сеть
-          docker network create test-net
-
-          # Запускаем PostgreSQL с проверкой здоровья
-          docker run -d \
-            --name postgres \
-            --network test-net \
-            -e POSTGRES_USER=user \
-            -e POSTGRES_PASSWORD=password \
-            -e POSTGRES_DB=lab4 \
-            -p 5432:5432 \
-            --health-cmd "pg_isready -U user -d lab4" \
-            --health-interval 5s \
-            --health-timeout 3s \
-            --health-retries 10 \
-            postgres:13
-            
-          # Ждем готовности PostgreSQL
-          timeout 60s bash -c \
-            'until docker inspect postgres --format "{{.State.Health.Status}}" | grep -q "healthy"; do sleep 2; done'
-
-          # Собираем и запускаем бэкенд
-          docker compose -f docker-compose.ci.yml up -d --build
-
-          # Ждем готовности бэкенда
-          sleep 40
-
-      - name: Verify services
-        run: |
-          echo "--- Running containers ---"
-          docker ps -a
-
-          echo "--- PostgreSQL logs ---"
-          docker logs postgres
-
-          echo "--- Backend logs ---"
-          docker logs backend
-
-          echo "--- Health check ---"
-          curl -v http://localhost:18080/api/health || true
+          docker compose up --build -d db backend
+          sleep 30
 
       - name: Run tests
-        env:
-          API_BASE_URL: "http://localhost:18080"
-          DB_HOST: "postgres"
         run: |
+          source venv/bin/activate
           cd backend/test
           pip install -r requirements.txt
           pytest -v --log-level=DEBUG
@@ -70,7 +42,5 @@ jobs:
       - name: Clean up
         if: always()
         run: |
-          docker compose -f docker-compose.ci.yml down
-          docker stop postgres || true
-          docker network rm test-net || true
+          docker compose down -v
           docker system prune -f
