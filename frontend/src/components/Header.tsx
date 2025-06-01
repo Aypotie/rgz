@@ -16,6 +16,9 @@ const Header = () => {
                             <li className="nav-item">
                                 <a className="nav-link" href="/create_incident">Создать инцидент</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/statistic">Статистика</a>
+                            </li>
                             <li className="nav-item dropdown">
                                 <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                     Контакты

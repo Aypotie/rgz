@@ -91,6 +91,7 @@ struct IncidentListItem
     string description;
     string sector;
     string status;
+    string type;
 
     crow::json::wvalue render()
     {
@@ -101,6 +102,7 @@ struct IncidentListItem
         x["description"] = description;
         x["sector"] = sector;
         x["status"] = status;
+        x["type"] = type;
         return x;
     }
 };

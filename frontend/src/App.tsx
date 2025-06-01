@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import { CreateIncident } from './pages/create_incident';
 
 import './index.css';
+import Statistic from './pages/statistic';
 
 const App = () => {
   return (
@@ -27,6 +28,14 @@ const App = () => {
           element={
             <AuthProvider >
               <IncidentsBySector />
+            </AuthProvider >
+          }
+        />
+        <Route
+          path="/statistic"
+          element={
+            <AuthProvider >
+              <Statistic />
             </AuthProvider >
           }
         />

@@ -108,10 +108,12 @@ public:
         string query = "SELECT "
                        "i.id, i.created_at, i.incident_time, i.description, "
                        "s.name AS sector_name, "
-                       "st.name AS status_name "
+                       "st.name AS status_name, "
+                       "ti.name AS type_incident_name "
                        "FROM incident i "
                        "JOIN sector s ON s.id = i.sector_id "
-                       "JOIN status st ON st.id = i.status_id";
+                       "JOIN status st ON st.id = i.status_id "
+                       "JOIN type_incident ti ON ti.id = i.type_incident_id";
 
         if (sectorID != 0)
         {
@@ -150,6 +152,7 @@ public:
             incident.description = row["description"].as<string>();
             incident.sector = row["sector_name"].as<string>();
             incident.status = row["status_name"].as<string>();
+            incident.type = row["type_incident_name"].as<string>();
             incidentList.push_back(incident);
         }
 
