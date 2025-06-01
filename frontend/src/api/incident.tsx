@@ -7,8 +7,21 @@ interface IncidentsResponse {
     total: number;
 }
 
-export const getIncidentsBySectorID = async (id: number, page: number, limit: number) => {
-    const res = await fetch(`${API_URL}/api/incident?sector_id=${id}&page=${page}&limit=${limit}`, {
+export const getIncidentsBySectorID = async (id: number, page: number, limit: number, startDate: string, endDate: string) => {
+    const res = await fetch(`${API_URL}/api/incident?sector_id=${id}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}`, {
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        throw Error("Ошибка при получении инцидентов")
+    }
+
+    const data: IncidentsResponse = await res.json();
+    return data;
+};
+
+export const getIncidentsByDate = async (startDate: string, endDate: string) => {
+    const res = await fetch(`${API_URL}/api/incident?start_date=${startDate}&end_date=${endDate}`, {
         credentials: "include",
     });
 

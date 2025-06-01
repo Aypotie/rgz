@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 import { getSector, getType } from "../api/other";
-import { getIncidentsBySectorID } from "../api/incident";
+import { getIncidentsByDate } from "../api/incident";
 import { type Sector, type Type, type IncidentListItem } from "../models/models";
 
 interface SectorStats {
@@ -9,68 +9,63 @@ interface SectorStats {
     count: number;
 }
 
+const formatDate = (date: Date) => date.toISOString().split("T")[0];
+
 const Statistic = () => {
+    const today = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(today.getDate() - 7);
+
+    const [startDate, setStartDate] = useState<string>(formatDate(oneWeekAgo));
+    const [endDate, setEndDate] = useState<string>(formatDate(today));
+
     const [data, setData] = useState<SectorStats[]>([]);
     const [chartType, setChartType] = useState<"sector" | "type">("sector");
 
     useEffect(() => {
-        const fetchBySectors = async () => {
-            const sectorsResponse = await getSector();
-            const sectors: Sector[] = sectorsResponse.sector;
-
-            const stats: SectorStats[] = [];
-
-            for (const sector of sectors) {
-                const response = await getIncidentsBySectorID(sector.id, 1, 1000); // получаем до 1000
-                stats.push({
-                    name: sector.name,
-                    count: response.total,
-                });
-            }
-
-            setData(stats);
-        };
-
-        const fetchByTypes = async () => {
-            const typesResponse = await getType();
-            const types: Type[] = typesResponse.type;
-
-            const sectorsResponse = await getSector();
-            const sectors: Sector[] = sectorsResponse.sector;
-
-            const typeCounts: { [key: string]: number } = {};
-
-            for (const type of types) {
-                typeCounts[type.name] = 0;
-            }
-
-            for (const sector of sectors) {
-                const incidentsResponse = await getIncidentsBySectorID(sector.id, 1, 1000);
-                const incidents: IncidentListItem[] = incidentsResponse.incidents;
-
-                for (const incident of incidents) {
-                    // @ts-ignore: type есть в Incident, не в IncidentListItem
-                    const type = incident.type;
-                    if (type && typeCounts[type] !== undefined) {
-                        typeCounts[type]++;
-                    }
-                }
-            }
-
-            const stats: SectorStats[] = Object.entries(typeCounts).map(([name, count]) => ({
-                name,
-                count,
-            }));
-
-            setData(stats);
-        };
-
         const fetchData = async () => {
             try {
+                const [sectorsResponse, typesResponse, incidentsResponse] = await Promise.all([
+                    getSector(),
+                    getType(),
+                    getIncidentsByDate(startDate, endDate)
+                ]);
+
+                const sectors: Sector[] = sectorsResponse.sector;
+                const types: Type[] = typesResponse.type;
+                const incidents: IncidentListItem[] = incidentsResponse.incidents;
+
                 if (chartType === "sector") {
-                    await fetchBySectors();
+                    const sectorMap: Record<string, number> = {};
+
+                    for (const sector of sectors) {
+                        sectorMap[sector.name] = 0;
+                    }
+
+                    for (const incident of incidents) {
+                        const sector = sectors.find(s => s.name === incident.sector);
+                        if (sector) {
+                            sectorMap[sector.name]++;
+                        }
+                    }
+
+                    const stats: SectorStats[] = Object.entries(sectorMap).map(([name, count]) => ({ name, count }));
+                    setData(stats);
                 } else {
-                    await fetchByTypes();
+                    const typeMap: Record<string, number> = {};
+
+                    for (const type of types) {
+                        typeMap[type.name] = 0;
+                    }
+
+                    for (const incident of incidents) {
+                        if (incident.type && typeMap[incident.type] !== undefined) {
+                            typeMap[incident.type]++;
+                        }
+                    }
+
+                    const stats: SectorStats[] = Object.entries(typeMap).map(([name, count]) => ({ name, count }));
+                    setData(stats);
                 }
             } catch (e) {
                 console.error("Ошибка при загрузке статистики", e);
@@ -78,11 +73,35 @@ const Statistic = () => {
         };
 
         fetchData();
-    }, [chartType]);
+    }, [chartType, startDate, endDate]);
 
     return (
         <div className="container mt-4">
             <h2 className="mb-3">Статистика инцидентов</h2>
+
+            <div className="row mb-4">
+                <div className="col-md-6">
+                    <label htmlFor="startDate" className="form-label">Дата начала</label>
+                    <input
+                        type="date"
+                        id="startDate"
+                        className="form-control"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </div>
+                <div className="col-md-6">
+                    <label htmlFor="endDate" className="form-label">Дата окончания</label>
+                    <input
+                        type="date"
+                        id="endDate"
+                        className="form-control"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                    />
+                </div>
+            </div>
+
             <div className="mb-4">
                 <label htmlFor="chartType" className="form-label">Выберите график:</label>
                 <select

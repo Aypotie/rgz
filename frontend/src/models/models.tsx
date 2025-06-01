@@ -20,6 +20,7 @@ export interface IncidentListItem {
     description: string;
     sector: string;
     status: string;
+    type: string;
 }
 
 export interface Incident extends IncidentListItem {
@@ -28,7 +29,6 @@ export interface Incident extends IncidentListItem {
     securityman_lastname: string;
     securityman_id: number;
     critical_level: string;
-    type: string;
 }
 
 export interface UserInfo {
