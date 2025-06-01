@@ -13,6 +13,18 @@
 
 using namespace std;
 
+string join(const std::vector<std::string> &elements, const std::string &delimiter)
+{
+    ostringstream os;
+    for (size_t i = 0; i < elements.size(); ++i)
+    {
+        os << elements[i];
+        if (i != elements.size() - 1)
+            os << delimiter;
+    }
+    return os.str();
+}
+
 class Database
 {
 private:
@@ -96,52 +108,70 @@ public:
         return sectorList;
     }
 
-    pair<vector<IncidentListItem>, int> getIncidents(int sectorID, int page, int limit)
+    pair<vector<IncidentListItem>, int> getIncidents(int sectorID, int page, int limit, string startDate, string endDate)
     {
         lock_guard<mutex> lock(db_mutex);
         int offset = (page - 1) * limit;
-        bool isParam = false;
         vector<IncidentListItem> incidentList;
         pqxx::work tx{conn};
 
-        // 1. Запрос для получения данных с пагинацией
-        string query = "SELECT "
-                       "i.id, i.created_at, i.incident_time, i.description, "
-                       "s.name AS sector_name, "
-                       "st.name AS status_name, "
-                       "ti.name AS type_incident_name "
-                       "FROM incident i "
-                       "JOIN sector s ON s.id = i.sector_id "
-                       "JOIN status st ON st.id = i.status_id "
-                       "JOIN type_incident ti ON ti.id = i.type_incident_id";
+        vector<string> whereClauses;
+        vector<string> paramOrder;
+        int paramIndex = 1;
 
         if (sectorID != 0)
         {
-            query += " WHERE s.id = $1";
-            isParam = true;
+            whereClauses.push_back("s.id = $" + to_string(paramIndex++));
+            paramOrder.push_back("sectorID");
         }
 
-        // Добавляем сортировку для стабильной пагинации
-        query += " ORDER BY i.id";
+        if (!startDate.empty())
+        {
+            whereClauses.push_back("i.incident_time >= $" + to_string(paramIndex++));
+            paramOrder.push_back("startDate");
+        }
+
+        if (!endDate.empty())
+        {
+            whereClauses.push_back("i.incident_time <= $" + to_string(paramIndex++));
+            paramOrder.push_back("endDate");
+        }
+
+        string whereSQL = whereClauses.empty() ? "" : " WHERE " + join(whereClauses, " AND ");
+
+        string query =
+            "SELECT i.id, i.created_at, i.incident_time, i.description, "
+            "s.name AS sector_name, st.name AS status_name, ti.name AS type_incident_name "
+            "FROM incident i "
+            "JOIN sector s ON s.id = i.sector_id "
+            "JOIN status st ON st.id = i.status_id "
+            "JOIN type_incident ti ON ti.id = i.type_incident_id " +
+            whereSQL + " ORDER BY i.id";
 
         if (limit > 0)
-        {
             query += " LIMIT " + to_string(limit);
-        }
         if (offset > 0)
-        {
             query += " OFFSET " + to_string(offset);
-        }
 
         pqxx::result res;
-        if (isParam)
-        {
+
+        // Вызов exec_params с правильным порядком аргументов
+        if (paramOrder == vector<string>{"sectorID", "startDate", "endDate"})
+            res = tx.exec_params(query, sectorID, startDate, endDate);
+        else if (paramOrder == vector<string>{"sectorID", "startDate"})
+            res = tx.exec_params(query, sectorID, startDate);
+        else if (paramOrder == vector<string>{"sectorID", "endDate"})
+            res = tx.exec_params(query, sectorID, endDate);
+        else if (paramOrder == vector<string>{"startDate", "endDate"})
+            res = tx.exec_params(query, startDate, endDate);
+        else if (paramOrder == vector<string>{"sectorID"})
             res = tx.exec_params(query, sectorID);
-        }
+        else if (paramOrder == vector<string>{"startDate"})
+            res = tx.exec_params(query, startDate);
+        else if (paramOrder == vector<string>{"endDate"})
+            res = tx.exec_params(query, endDate);
         else
-        {
-            res = tx.exec(query);
-        }
+            res = tx.exec(query); // без параметров
 
         for (const auto &row : res)
         {
@@ -156,16 +186,32 @@ public:
             incidentList.push_back(incident);
         }
 
-        // 2. Запрос для получения общего количества
-        string countQuery = "SELECT COUNT(*) FROM incident i";
-        if (sectorID != 0)
-        {
-            countQuery += " WHERE i.sector_id = " + to_string(sectorID);
-        }
+        // То же самое для countQuery
+        string countQuery =
+            "SELECT COUNT(*) FROM incident i "
+            "JOIN sector s ON s.id = i.sector_id " +
+            (whereClauses.empty() ? "" : " WHERE " + join(whereClauses, " AND "));
 
-        pqxx::result countRes = tx.exec(countQuery);
+        pqxx::result countRes;
+
+        if (paramOrder == vector<string>{"sectorID", "startDate", "endDate"})
+            countRes = tx.exec_params(countQuery, sectorID, startDate, endDate);
+        else if (paramOrder == vector<string>{"sectorID", "startDate"})
+            countRes = tx.exec_params(countQuery, sectorID, startDate);
+        else if (paramOrder == vector<string>{"sectorID", "endDate"})
+            countRes = tx.exec_params(countQuery, sectorID, endDate);
+        else if (paramOrder == vector<string>{"startDate", "endDate"})
+            countRes = tx.exec_params(countQuery, startDate, endDate);
+        else if (paramOrder == vector<string>{"sectorID"})
+            countRes = tx.exec_params(countQuery, sectorID);
+        else if (paramOrder == vector<string>{"startDate"})
+            countRes = tx.exec_params(countQuery, startDate);
+        else if (paramOrder == vector<string>{"endDate"})
+            countRes = tx.exec_params(countQuery, endDate);
+        else
+            countRes = tx.exec(countQuery);
+
         int totalCount = countRes[0][0].as<int>();
-
         tx.commit();
 
         return make_pair(incidentList, totalCount);

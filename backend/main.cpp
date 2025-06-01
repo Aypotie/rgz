@@ -29,7 +29,7 @@ int main()
         cors
             .global()
             .prefix("/api")
-            .origin("http://localhost")
+            .origin("http://localhost:5173")
             .allow_credentials()
             .headers("Content-Type", "Authorization");
 

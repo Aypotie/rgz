@@ -99,7 +99,11 @@ public:
         auto idParam = req.url_params.get("sector_id");
         auto pageParam = req.url_params.get("page");
         auto limitParam = req.url_params.get("limit");
+        auto startDateParam = req.url_params.get("start_date");
+        auto endDateParam = req.url_params.get("end_date");
         int sectorID = 0, page = 1, limit = 0;
+        string startDate = startDateParam ? string(startDateParam) : "";
+        string endDate = endDateParam ? string(endDateParam) : "";
         if (idParam)
         {
             sectorID = atoi(idParam);
@@ -114,7 +118,7 @@ public:
         }
         try
         {
-            auto p = database.getIncidents(sectorID, page, limit);
+            auto p = database.getIncidents(sectorID, page, limit, startDate, endDate);
             incidents = p.first;
             count = p.second;
         }
