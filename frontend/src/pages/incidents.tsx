@@ -195,7 +195,10 @@ export const IncidentsBySector = () => {
                 data={sectors}
                 label="Сектор"
                 selectedValue={selectedSector}
-                setSelectedElement={setSelectedSector}
+                setSelectedElement={(id) => {
+                    setCurrentPage(1);
+                    setSelectedSector(id);
+                }}
             />
 
             <ul className="list-group mb-4">
