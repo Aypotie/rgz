@@ -7,8 +7,8 @@ interface IncidentsResponse {
     total: number;
 }
 
-export const getIncidentsBySectorID = async (id: number, page: number, limit: number, startDate: string, endDate: string) => {
-    const res = await fetch(`${API_URL}/api/incident?sector_id=${id}&page=${page}&limit=${limit}&start_date=${startDate}&end_date=${endDate}`, {
+export const getIncidentsBySectorID = async (id: number, page: number, limit: number) => {
+    const res = await fetch(`${API_URL}/api/incident?sector_id=${id}&page=${page}&limit=${limit}`, {
         credentials: "include",
     });
 
